@@ -15,4 +15,7 @@ class HarmonicProcessor:
         self.automaton = CountingAutomaton()
 
     def process(self, note):
-        return self.harmonics[self.automaton.step() % self.n_harmonics] + note
+        index = self.automaton.step() % self.n_harmonics
+        delta = self.harmonics[index]
+        print(f"Index: {index}, Delta: {delta}")
+        return delta + note

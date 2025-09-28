@@ -1,23 +1,13 @@
 import mido
-import math
-import random
+from harmonic_processor import HarmonicProcessor
 
-n_harmonics = 8
-harmonics = [int(round(12 * math.log2(n), 2)) for n in range(1, n_harmonics + 1)]
-print(harmonics)
 
 # State to track note-to-harmonic mappings
 # Maps (channel, original_note) -> harmonic_offset
 active_notes = {}
 
 
-def get_random_harmonic(note):
-    return random.choice(harmonics) + note
-
-
-def get_second_harmonic(note):
-    return note + 12
-    # return note + harmonics[1]
+processors = {1: HarmonicProcessor(n_harmonics=8)}
 
 
 def clamp_note(n):
@@ -30,6 +20,8 @@ def process(msg: mido.Message):
     if msg.type not in ("note_on", "note_off"):
         return [msg]
 
+    input_note = msg.note
+
     # Treat "note_on with velocity 0" as note_off for consistency
     is_off = (msg.type == "note_off") or (
         msg.type == "note_on" and getattr(msg, "velocity", 0) == 0
@@ -38,24 +30,31 @@ def process(msg: mido.Message):
     # Create a key for this note (channel, original_note)
     note_key = (msg.channel, msg.note)
 
+    # Get the processor for this channel
+    if msg.channel in processors:
+        processor = processors[msg.channel]
+    else:
+        processor = HarmonicProcessor(n_harmonics=8)
+        processors[msg.channel] = processor
+
     if is_off:
-        # Note off: use the stored harmonic offset if it exists
+        # Note off: use the stored note if it exists
         if note_key in active_notes:
-            harmonic_offset = active_notes[note_key]
-            msg.note = clamp_note(msg.note + harmonic_offset)
+            new_note = active_notes[note_key]
+            msg.note = new_note
             # Clean up the mapping
             del active_notes[note_key]
         else:
             # If we don't have a mapping, pass through unchanged
             pass
     else:
-        # Note on: generate a new random harmonic and store the mapping
-        harmonic_offset = random.choice(harmonics)
-        active_notes[note_key] = harmonic_offset
-        msg.note = clamp_note(msg.note + harmonic_offset)
+        # Note on: generate a new note
+        new_note = processor.process(msg.note)
+        active_notes[note_key] = clamp_note(new_note)
+        msg.note = new_note
 
     print(
-        f"Original: {msg.note - (active_notes.get(note_key, 0) if not is_off else 0)}, Transformed: {msg.note}"
+        f"In {"off" if is_off else "on "} {msg.channel}: {input_note:02d}, Out: {msg.note:02d}"
     )
 
     return [msg]
