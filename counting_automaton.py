@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 import operator
 
-"""
-State machine that applies an operator and operand to a value at each step, and transitions to a new state when the current state's counter reaches a threshold.
-"""
-
 
 @dataclass
 class State:
@@ -18,6 +14,10 @@ class State:
 
 
 class CountingAutomaton:
+    """
+    State machine that applies an operator and operand to a value at each step, and transitions to a new state when the current state's counter reaches a threshold.
+    """
+
     def __init__(self):
         self.ops = {
             "+": operator.add,
