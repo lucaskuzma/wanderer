@@ -2,7 +2,7 @@ import mido
 import math
 import random
 
-n_harmonics = 4
+n_harmonics = 8
 harmonics = [int(round(12 * math.log2(n), 2)) for n in range(1, n_harmonics + 1)]
 print(harmonics)
 
