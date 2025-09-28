@@ -1,16 +1,28 @@
 import mido
+import math
+import random
 
-# For each incoming note, emit root, fifth (+7), ninth (+14).
-# Works for note_on and note_off (or note_on with velocity=0).
-INTERVALS = (0, 7, 14)
+n_harmonics = 4
+harmonics = [int(round(12 * math.log2(n), 2)) for n in range(1, n_harmonics + 1)]
+print(harmonics)
+
+# State to track note-to-harmonic mappings
+# Maps (channel, original_note) -> harmonic_offset
+active_notes = {}
 
 
-def _clamp_note(n):
-    return max(0, min(127, n))
+def get_random_harmonic(note):
+    return random.choice(harmonics) + note
 
 
-def _chord_notes(note):
-    return tuple(_clamp_note(note + i) for i in INTERVALS)
+def get_second_harmonic(note):
+    return note + 12
+    # return note + harmonics[1]
+
+
+def clamp_note(n):
+    # return max(0, min(127, n))
+    return n % 127
 
 
 def process(msg: mido.Message):
@@ -23,23 +35,27 @@ def process(msg: mido.Message):
         msg.type == "note_on" and getattr(msg, "velocity", 0) == 0
     )
 
-    outs = []
-    for n in _chord_notes(msg.note):
-        if is_off:
-            outs.append(
-                mido.Message(
-                    "note_off", note=n, velocity=0, channel=msg.channel, time=0
-                )
-            )
+    # Create a key for this note (channel, original_note)
+    note_key = (msg.channel, msg.note)
+
+    if is_off:
+        # Note off: use the stored harmonic offset if it exists
+        if note_key in active_notes:
+            harmonic_offset = active_notes[note_key]
+            msg.note = clamp_note(msg.note + harmonic_offset)
+            # Clean up the mapping
+            del active_notes[note_key]
         else:
-            # keep incoming velocity for all chord tones
-            outs.append(
-                mido.Message(
-                    "note_on",
-                    note=n,
-                    velocity=msg.velocity,
-                    channel=msg.channel,
-                    time=0,
-                )
-            )
-    return outs
+            # If we don't have a mapping, pass through unchanged
+            pass
+    else:
+        # Note on: generate a new random harmonic and store the mapping
+        harmonic_offset = random.choice(harmonics)
+        active_notes[note_key] = harmonic_offset
+        msg.note = clamp_note(msg.note + harmonic_offset)
+
+    print(
+        f"Original: {msg.note - (active_notes.get(note_key, 0) if not is_off else 0)}, Transformed: {msg.note}"
+    )
+
+    return [msg]
