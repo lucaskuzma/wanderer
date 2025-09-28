@@ -20,3 +20,20 @@ source .venv/bin/activate
 
 python -m pip install -r requirements.txt
 ```
+
+## Run
+
+Execute the host file. This will expose Python MIDI ports you can map to and from in your DAW.
+
+```bash
+python host.py
+```
+
+## Audio Sample
+
+Here is a sample of the audio output. The input is just one note repeated.
+
+<audio controls>
+  <source src="sample.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
