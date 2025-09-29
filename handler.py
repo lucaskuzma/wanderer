@@ -54,7 +54,7 @@ def process(msg: mido.Message):
         msg.note = new_note
 
     print(
-        f"In {"off" if is_off else "on "} {msg.channel}: {input_note:02d}, Out: {msg.note:02d}"
+        f"{msg.channel:02d}: {" " if is_off else "•"} {input_note:02d} → {msg.note:02d} | {processor}"
     )
 
     return [msg]

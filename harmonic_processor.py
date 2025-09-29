@@ -17,5 +17,13 @@ class HarmonicProcessor:
     def process(self, note):
         index = self.automaton.step() % self.n_harmonics
         delta = self.harmonics[index]
-        print(f"Index: {index}, Delta: {delta}")
         return delta + note
+
+    def __str__(self):
+        str_parts = []
+        for i, h in enumerate(self.harmonics):
+            if i == index:
+                str_parts.append(f" {h:02d} ")
+            else:
+                str_parts.append(f"[{h:02d}]")
+        return "".join(str_parts)
