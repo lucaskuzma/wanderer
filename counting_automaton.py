@@ -71,6 +71,9 @@ class CountingAutomaton:
         self.value = self.apply_op(self.current_state.operator)
         return self.value
 
+    def __str__(self):
+        return f"{self.current_state.counter:02d} | {self.current_state.operator} {self.current_state.operand:02d} | {self.value:02d}"
+
 
 if __name__ == "__main__":
     sm = CountingAutomaton()

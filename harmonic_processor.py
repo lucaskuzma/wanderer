@@ -27,4 +27,4 @@ class HarmonicProcessor:
                 str_parts.append(f"[{h:02d}]")
             else:
                 str_parts.append(f" {h:02d} ")
-        return "".join(str_parts)
+        return f" {self.automaton} | " + "".join(str_parts)

@@ -53,8 +53,11 @@ def process(msg: mido.Message):
         active_notes[note_key] = clamp_note(new_note)
         msg.note = new_note
 
+    column_offset = msg.channel * 72
+    column_offset_str = " " * column_offset
+
     print(
-        f"{msg.channel:02d}: {" " if is_off else "•"} {input_note:02d} → {msg.note:02d} | {processor}"
+        f"{column_offset_str}{msg.channel:02d} | {" " if is_off else "•"} {input_note:02d} → {msg.note:02d} | {processor if not is_off else ""}"
     )
 
     return [msg]
