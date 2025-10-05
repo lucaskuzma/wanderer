@@ -22,7 +22,6 @@ api = Api()
 
 
 def run_demo():
-    time.sleep(1)  # give webview time to init
     api.clear("left")
     api.clear("right")
     for i in range(10):
@@ -30,6 +29,11 @@ def run_demo():
         api.write("right", "Oops: <error>bad timing</error>")
         api.write("left", "And a <accent>jazzy accent</accent>")
         time.sleep(0.5)
+
+
+def on_loaded(window):
+    """Called when the DOM is ready"""
+    threading.Thread(target=run_demo, daemon=True).start()
 
 
 if __name__ == "__main__":
@@ -42,8 +46,8 @@ if __name__ == "__main__":
     )
     api.set_window(window)
 
-    # start your demo thread AFTER the window is created
-    threading.Thread(target=run_demo, daemon=True).start()
+    # Subscribe to the loaded event
+    window.events.loaded += on_loaded
 
     # now block the main thread running the GUI loop
     webview.start()
