@@ -30,21 +30,6 @@ class UIService:
                 pane_html = f'<div id="{pane_id}" class="pane"></div>'
                 container.append(pane_html)
 
-    def render_markup(self, text):
-        """Render markup tags in text"""
-
-        def replace_tag(match):
-            tag = match.group(1)
-            content = match.group(2)
-            style = self.presentation_service.style_map.get(tag, "")
-            return f'<span style="{style}">{content}</span>'
-
-        return re.sub(r"<(\w+)>(.*?)</\1>", replace_tag, text)
-
-    def render_display_data(self, display_data: DisplayData):
-        """Render DisplayData to HTML"""
-        return self.presentation_service.render_display_data(display_data)
-
     def clear(self, pane):
         """Clear a specific pane"""
         with self._ui_lock:
@@ -66,9 +51,11 @@ class UIService:
 
                 # Handle both string and DisplayData
                 if isinstance(content, DisplayData):
-                    rendered_text = self.render_display_data(content)
+                    rendered_text = self.presentation_service.render_markup(
+                        content.content
+                    )
                 else:
-                    rendered_text = self.render_markup(content)
+                    rendered_text = self.presentation_service.render_markup(content)
 
                 # Use the element's _window to run JavaScript
                 js_code = f"""

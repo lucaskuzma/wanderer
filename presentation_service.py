@@ -3,6 +3,7 @@ Presentation service for formatting processor data for UI display.
 """
 
 from dataclasses import dataclass
+import re
 
 
 @dataclass
@@ -10,7 +11,6 @@ class DisplayData:
     """Simple display data"""
 
     content: str
-    style: str
 
 
 class PresentationService:
@@ -18,19 +18,19 @@ class PresentationService:
 
     def __init__(self):
         self.style_map = {
-            "error": "color: #ff5555; font-weight: bold;",
+            "error": "color: #ff5555;",
             "note": "color: #33ccff;",
-            "accent": "color: #ffff66; font-style: italic;",
+            "accent": "color: #ffff66;",
             "success": "color: #55ff55;",
             "info": "color: #aaaaaa;",
-            "processor": "color: #ffaa00; font-weight: bold;",
+            "processor": "color: #ffaa00;",
             "state": "color: #88ff88;",
         }
 
     def format_automaton(self, automaton) -> DisplayData:
         """Format automaton data for display"""
         content = f"{automaton.current_state.counter:02d} | {automaton.current_state.operator} {automaton.current_state.operand:02d} | {automaton.value:02d}"
-        return DisplayData(content=content, style="state")
+        return DisplayData(content=f"<state>{content}</state>")
 
     def format_harmonic_processor(self, processor) -> DisplayData:
         """Format harmonic processor data for display"""
@@ -38,14 +38,14 @@ class PresentationService:
         harmonics_display = []
         for i, h in enumerate(processor.harmonics):
             if i == processor.index:
-                harmonics_display.append(f"[{h:02d}]")
+                harmonics_display.append(f"<accent>[{h:02d}]</accent>")
             else:
                 harmonics_display.append(f" {h:02d} ")
 
         # Use the automaton formatter
         automaton_data = self.format_automaton(processor.automaton)
         content = f" {automaton_data.content} | " + "".join(harmonics_display)
-        return DisplayData(content=content, style="processor")
+        return DisplayData(content=f"<processor>{content}</processor>")
 
     def format_midi_event(
         self, msg, input_note: int, output_note: int, processor, is_off: bool = False
@@ -58,9 +58,21 @@ class PresentationService:
         if not is_off:
             content += f" | {processor_info.content}"
 
-        return DisplayData(content=content, style="note" if not is_off else "info")
+        tag = "note" if not is_off else "info"
+        return DisplayData(content=f"<{tag}>{content}</{tag}>")
 
-    def render_display_data(self, display_data: DisplayData) -> str:
-        """Render DisplayData to HTML for the UI"""
-        style = self.style_map.get(display_data.style, "")
-        return f'<span style="{style}">{display_data.content}</span>'
+    def render_markup(self, text):
+        """Render markup tags in text"""
+
+        def replace_tag(match):
+            tag = match.group(1)
+            content = match.group(2)
+            style = self.style_map.get(tag, "")
+            return f'<span style="{style}">{content}</span>'
+
+        # Handle nested tags by processing from innermost to outermost
+        # This regex matches the innermost tags first
+        while re.search(r"<(\w+)>(.*?)</\1>", text):
+            text = re.sub(r"<(\w+)>(.*?)</\1>", replace_tag, text)
+
+        return text
