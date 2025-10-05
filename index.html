@@ -20,6 +20,12 @@
         border-right: 1px solid #444;
         font-size: 14px;
         line-height: 1.4;
+        /* Hide scrollbars but keep scrolling functionality */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+      }
+      .pane::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
       }
       .pane:last-child {
         border-right: none;
@@ -29,31 +35,5 @@
   <body>
     <div id="left" class="pane"></div>
     <div id="right" class="pane"></div>
-
-    <script>
-      const styleMap = {
-        error: "color: #ff5555; font-weight: bold;",
-        note: "color: #33ccff;",
-        accent: "color: #ffff66; font-style: italic;",
-        success: "color: #55ff55;",
-      };
-
-      function renderMarkup(str) {
-        // Replace <tag>content</tag> with styled spans
-        return str.replace(/<(\w+)>(.*?)<\/\1>/g, (match, tag, content) => {
-          const style = styleMap[tag] || "";
-          return `<span style="${style}">${content}</span>`;
-        });
-      }
-
-      function clearPane(pane) {
-        document.getElementById(pane).innerHTML = "";
-      }
-      function writePane(pane, text) {
-        const el = document.getElementById(pane);
-        el.innerHTML += renderMarkup(text) + "<br>";
-        el.scrollTop = el.scrollHeight;
-      }
-    </script>
   </body>
 </html>
