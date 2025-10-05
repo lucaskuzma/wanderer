@@ -49,8 +49,7 @@ class UIService:
             try:
                 element = self.window.dom.get_element(f"#{pane}")
 
-                # Handle both string and DisplayData
-                if isinstance(content, DisplayData):
+                if hasattr(content, "content"):
                     rendered_text = self.presentation_service.render_markup(
                         content.content
                     )
@@ -80,7 +79,8 @@ class UIService:
 
     def notify_reload(self):
         """Notify UI of handler reload"""
-        self.write("pane_0", "<info>Handler reloaded</info>")
+        # self.write("pane_0", "<info>Handler reloaded</info>")
+        pass
 
     def run_demo(self):
         """Run demo content (for debugging/testing)"""

@@ -69,10 +69,20 @@ class MidiService:
     def reload_handler(self):
         """Reload the handler module (called by file watcher)"""
         try:
+            # Import and reload modules
+            import harmonic_processor
+            import presentation_service
+
+            importlib.reload(harmonic_processor)
+            importlib.reload(presentation_service)
+
+            # Recreate presentation service with reloaded module
+            self.presentation_service = presentation_service.PresentationService()
+
             # Reset state when reloading
             self.active_notes.clear()
-            self.processors = {1: HarmonicProcessor(n_harmonics=8)}
-            print("[midi] Handler state reset")
+            self.processors = {1: harmonic_processor.HarmonicProcessor(n_harmonics=8)}
+            print("[midi] Handler modules reloaded and state reset")
         except Exception as e:
             print(f"[midi] Error reloading handler: {e}")
 
