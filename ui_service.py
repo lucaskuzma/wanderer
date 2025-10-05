@@ -76,40 +76,23 @@ class UIService:
             except Exception as e:
                 print(f"[ui] Error writing to pane {pane}: {e}")
 
-    def update_midi_status(self, msg, out_msgs):
-        """Update UI with MIDI message information"""
+    def update_midi_status(self, msg, formatted_output, channel):
+        """Update UI with formatted MIDI message information"""
         if not self.window:
             return
 
-        # Format the message for display
-        msg_type = (
-            "•" if msg.type == "note_on" and getattr(msg, "velocity", 0) > 0 else " "
-        )
-        channel = getattr(msg, "channel", 0)
-        note = getattr(msg, "note", 0)
-
-        # Create column offset for channel separation
-        column_offset = channel * 72
-        column_offset_str = " " * column_offset
-
-        # Display in different panes based on channel
+        # Display in different panes based on channel (support only 4 channels)
         pane_index = channel % len(self.panes)
         pane = self.panes[pane_index]
 
-        if out_msgs and len(out_msgs) > 0:
-            out_note = getattr(out_msgs[0], "note", note)
-            status_text = f"{column_offset_str}{channel:02d} | {msg_type} {note:02d} → {out_note:02d}"
-        else:
-            status_text = f"{column_offset_str}{channel:02d} | {msg_type} {note:02d}"
-
-        self.write(pane, status_text)
+        self.write(pane, formatted_output)
 
     def notify_reload(self):
         """Notify UI of handler reload"""
         self.write("pane_0", "<info>Handler reloaded</info>")
 
     def run_demo(self):
-        """Run demo content (for testing)"""
+        """Run demo content (for debugging/testing)"""
         # Clear all panes
         for pane in self.panes:
             self.clear(pane)
@@ -124,8 +107,8 @@ class UIService:
     def on_loaded(self, window):
         """Called when the DOM is ready"""
         self.create_panes()
-        # Start demo in background thread
-        threading.Thread(target=self.run_demo, daemon=True).start()
+        # Demo disabled by default - uncomment for debugging
+        # threading.Thread(target=self.run_demo, daemon=True).start()
 
     def run(self):
         """Start the UI (blocks main thread)"""
