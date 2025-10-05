@@ -14,7 +14,7 @@ from file_watcher_service import FileWatcherService
 class App:
     def __init__(self):
         self.midi_service = MidiService()
-        self.ui_service = UIService()
+        self.ui_service = UIService(self.midi_service.presentation_service)
         self.file_watcher = FileWatcherService()
 
         # Connect services

@@ -8,6 +8,7 @@ import time
 import mido
 import importlib
 from harmonic_processor import HarmonicProcessor
+from presentation_service import PresentationService
 
 
 class MidiService:
@@ -17,6 +18,7 @@ class MidiService:
         self.running = False
         self.thread = None
         self.ui_callback = None
+        self.presentation_service = PresentationService()
 
         # MIDI port names
         self.IN_NAME = "PY MIDI In"
@@ -155,16 +157,13 @@ class MidiService:
             self.active_notes[note_key] = self.clamp_note(new_note)
             msg.note = new_note
 
-        # Format output for UI (moved from handler.py print statement)
-        msg_type = " " if is_off else "•"
-        processor_info = str(processor) if not is_off else ""
-
-        formatted_output = (
-            f"{msg_type} {input_note:02d} → {msg.note:02d} | {processor_info}"
+        # Use presentation service to format output
+        display_data = self.presentation_service.format_midi_event(
+            msg, input_note, msg.note, processor, is_off
         )
 
-        # Send formatted output to UI instead of printing
+        # Send formatted output to UI
         if self.ui_callback:
-            self.ui_callback(msg, formatted_output, msg.channel)
+            self.ui_callback(msg, display_data, msg.channel)
 
         return [msg]

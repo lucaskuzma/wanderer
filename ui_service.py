@@ -7,20 +7,15 @@ import webview
 import threading
 import time
 import re
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
+from presentation_service import DisplayData, PresentationService
 
 
 class UIService:
-    def __init__(self):
+    def __init__(self, presentation_service: PresentationService = None):
         self.window = None
         self.panes = ["pane_0", "pane_1", "pane_2", "pane_3"]
-        self.style_map = {
-            "error": "color: #ff5555; font-weight: bold;",
-            "note": "color: #33ccff;",
-            "accent": "color: #ffff66; font-style: italic;",
-            "success": "color: #55ff55;",
-            "info": "color: #aaaaaa;",
-        }
+        self.presentation_service = presentation_service or PresentationService()
         self._ui_lock = threading.Lock()
 
     def set_window(self, window):
@@ -41,10 +36,14 @@ class UIService:
         def replace_tag(match):
             tag = match.group(1)
             content = match.group(2)
-            style = self.style_map.get(tag, "")
+            style = self.presentation_service.style_map.get(tag, "")
             return f'<span style="{style}">{content}</span>'
 
         return re.sub(r"<(\w+)>(.*?)</\1>", replace_tag, text)
+
+    def render_display_data(self, display_data: DisplayData):
+        """Render DisplayData to HTML"""
+        return self.presentation_service.render_display_data(display_data)
 
     def clear(self, pane):
         """Clear a specific pane"""
@@ -57,14 +56,19 @@ class UIService:
             except Exception as e:
                 print(f"[ui] Error clearing pane {pane}: {e}")
 
-    def write(self, pane, text):
-        """Write text to a specific pane"""
+    def write(self, pane, content):
+        """Write content to a specific pane. Accepts either string or DisplayData."""
         with self._ui_lock:
             if not self.window:
                 return
             try:
                 element = self.window.dom.get_element(f"#{pane}")
-                rendered_text = self.render_markup(text)
+
+                # Handle both string and DisplayData
+                if isinstance(content, DisplayData):
+                    rendered_text = self.render_display_data(content)
+                else:
+                    rendered_text = self.render_markup(content)
 
                 # Use the element's _window to run JavaScript
                 js_code = f"""
@@ -76,7 +80,7 @@ class UIService:
             except Exception as e:
                 print(f"[ui] Error writing to pane {pane}: {e}")
 
-    def update_midi_status(self, msg, formatted_output, channel):
+    def update_midi_status(self, msg, display_data, channel):
         """Update UI with formatted MIDI message information"""
         if not self.window:
             return
@@ -85,7 +89,7 @@ class UIService:
         pane_index = channel % len(self.panes)
         pane = self.panes[pane_index]
 
-        self.write(pane, formatted_output)
+        self.write(pane, display_data)
 
     def notify_reload(self):
         """Notify UI of handler reload"""
