@@ -53,8 +53,33 @@ class MidiService:
             print(f"[midi] Error starting MIDI service: {e}")
             self.running = False
 
+    def all_notes_off(self):
+        """Send note off messages for all active notes"""
+        if not self.outport:
+            return
+
+        print("[midi] Sending all notes off...")
+        for (channel, original_note), harmonic_note in self.active_notes.items():
+            try:
+                # Send note off for the harmonic note that was actually playing
+                note_off_msg = mido.Message(
+                    "note_off", channel=channel, note=harmonic_note, velocity=0
+                )
+                self.outport.send(note_off_msg)
+            except Exception as e:
+                print(
+                    f"[midi] Error sending note off for channel {channel}, note {harmonic_note}: {e}"
+                )
+
+        # Clear active notes
+        self.active_notes.clear()
+        print("[midi] All notes off sent")
+
     def stop(self):
         """Stop the MIDI service"""
+        # Send all notes off before stopping
+        self.all_notes_off()
+
         self.running = False
         if self.thread:
             self.thread.join(timeout=1.0)

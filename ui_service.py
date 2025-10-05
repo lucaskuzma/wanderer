@@ -17,10 +17,15 @@ class UIService:
         self.panes = ["pane_0", "pane_1", "pane_2", "pane_3"]
         self.presentation_service = presentation_service or PresentationService()
         self._ui_lock = threading.Lock()
+        self.midi_service = None
 
     def set_window(self, window):
         """Set the webview window reference"""
         self.window = window
+
+    def set_midi_service(self, midi_service):
+        """Set reference to MIDI service for cleanup"""
+        self.midi_service = midi_service
 
     def create_panes(self):
         """Create the 4 panes dynamically"""
@@ -101,6 +106,12 @@ class UIService:
         # Demo disabled by default - uncomment for debugging
         # threading.Thread(target=self.run_demo, daemon=True).start()
 
+    def on_closing(self, window):
+        """Called when the window is about to close"""
+        if self.midi_service:
+            self.midi_service.all_notes_off()
+        return True  # Allow the window to close
+
     def run(self):
         """Start the UI (blocks main thread)"""
         window = webview.create_window(
@@ -114,8 +125,9 @@ class UIService:
         )
         self.set_window(window)
 
-        # Subscribe to the loaded event
+        # Subscribe to the loaded and closing events
         window.events.loaded += self.on_loaded
+        window.events.closing += self.on_closing
 
         # This blocks the main thread running the GUI loop
         webview.start()
