@@ -63,16 +63,18 @@ class PresentationService:
 
     def render_markup(self, text):
         """Render markup tags in text"""
+        while True:
+            # Find the first complete tag pair (innermost)
+            match = re.search(r"<(\w+)>(.*?)</\1>", text)
+            if not match:
+                break
 
-        def replace_tag(match):
             tag = match.group(1)
             content = match.group(2)
             style = self.style_map.get(tag, "")
-            return f'<span style="{style}">{content}</span>'
 
-        # Handle nested tags by processing from innermost to outermost
-        # This regex matches the innermost tags first
-        while re.search(r"<(\w+)>(.*?)</\1>", text):
-            text = re.sub(r"<(\w+)>(.*?)</\1>", replace_tag, text)
+            # Replace the tag with HTML
+            replacement = f'<span style="{style}">{content}</span>'
+            text = text.replace(match.group(0), replacement)
 
         return text
