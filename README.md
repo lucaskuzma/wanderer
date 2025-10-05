@@ -23,10 +23,10 @@ python -m pip install -r requirements.txt
 
 ## Run
 
-Execute the host file. This will expose Python MIDI ports you can map to and from in your DAW.
+Execute the main application. This will start the MIDI service and web UI.
 
 ```bash
-python host.py
+python main.py
 ```
 
 ## Audio Sample

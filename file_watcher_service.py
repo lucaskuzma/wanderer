@@ -1,5 +1,5 @@
 """
-File watcher service for hot reloading handler.py.
+File watcher service for hot reloading Python files.
 Runs in a background thread and monitors file changes.
 """
 
@@ -8,12 +8,20 @@ import threading
 import importlib
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
 
 class FileWatcherService:
-    def __init__(self, target_file="handler.py"):
-        self.target_file = os.path.abspath(target_file)
+    def __init__(self, target_files: List[str] = None):
+        if target_files is None:
+            target_files = [
+                "midi_service.py",
+                "presentation_service.py",
+                "ui_service.py",
+                "harmonic_processor.py",
+                "counting_automaton.py",
+            ]
+        self.target_files = [os.path.abspath(f) for f in target_files]
         self.observer = None
         self.running = False
         self.reload_callback = None
@@ -34,12 +42,16 @@ class FileWatcherService:
 
         try:
             self.observer = Observer()
-            handler = ReloadHandler(self.target_file, self._on_file_modified)
+            handler = ReloadHandler(self.target_files, self._on_file_modified)
             self.observer.schedule(handler, ".", recursive=False)
             self.observer.start()
             self.running = True
 
-            print(f"[watcher] Monitoring {self.target_file} for changes")
+            print(
+                f"[watcher] Monitoring {len(self.target_files)} Python files for changes"
+            )
+            for file in self.target_files:
+                print(f"[watcher]   - {os.path.basename(file)}")
 
         except Exception as e:
             print(f"[watcher] Error starting file watcher: {e}")
@@ -52,9 +64,9 @@ class FileWatcherService:
             self.running = False
             print("[watcher] File watcher stopped")
 
-    def _on_file_modified(self):
-        """Called when target file is modified"""
-        print(f"[watcher] {self.target_file} modified, reloading...")
+    def _on_file_modified(self, modified_file):
+        """Called when a target file is modified"""
+        print(f"[watcher] {os.path.basename(modified_file)} modified, reloading...")
 
         # Call reload callback
         if self.reload_callback:
@@ -66,10 +78,11 @@ class FileWatcherService:
 
 
 class ReloadHandler(FileSystemEventHandler):
-    def __init__(self, target_path, callback):
-        self.target_path = os.path.abspath(target_path)
+    def __init__(self, target_paths, callback):
+        self.target_paths = [os.path.abspath(p) for p in target_paths]
         self.callback = callback
 
     def on_modified(self, event):
-        if os.path.abspath(event.src_path) == self.target_path:
-            self.callback()
+        modified_path = os.path.abspath(event.src_path)
+        if modified_path in self.target_paths:
+            self.callback(modified_path)
