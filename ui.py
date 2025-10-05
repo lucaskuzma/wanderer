@@ -7,6 +7,7 @@ import re
 class UI:
     def __init__(self):
         self.window = None
+        self.panes = ["pane_0", "pane_1", "pane_2", "pane_3"]
         self.style_map = {
             "error": "color: #ff5555; font-weight: bold;",
             "note": "color: #33ccff;",
@@ -16,6 +17,13 @@ class UI:
 
     def set_window(self, window):
         self.window = window
+
+    def create_panes(self):
+        """Create the 4 panes dynamically"""
+        container = self.window.dom.get_element("#pane-container")
+        for pane_id in self.panes:
+            pane_html = f'<div id="{pane_id}" class="pane"></div>'
+            container.append(pane_html)
 
     def render_markup(self, text):
         def replace_tag(match):
@@ -46,27 +54,33 @@ ui = UI()
 
 
 def run_demo():
-    ui.clear("left")
-    ui.clear("right")
+    # Clear all panes
+    for pane in ui.panes:
+        ui.clear(pane)
+
     for i in range(30):
-        ui.write("left", "This is <note>C#4</note>")
-        ui.write("right", "Oops: <error>bad timing</error>")
-        ui.write("left", "And a <accent>jazzy accent</accent>")
+        ui.write("pane_0", "This is <note>C#4</note>")
+        ui.write("pane_1", "Oops: <error>bad timing</error>")
+        ui.write("pane_2", "And a <accent>jazzy accent</accent>")
+        ui.write("pane_3", f"Count: <success>{i}</success>")
         time.sleep(0.5)
 
 
 def on_loaded(window):
     """Called when the DOM is ready"""
+    ui.create_panes()
     threading.Thread(target=run_demo, daemon=True).start()
 
 
 if __name__ == "__main__":
     window = webview.create_window(
-        "MIDI UI",
+        "wanderer",
         "index.html",
         js_api=ui,
-        width=800,
-        height=600,
+        width=1600,
+        height=900,
+        frameless=True,
+        easy_drag=True,
     )
     ui.set_window(window)
 
