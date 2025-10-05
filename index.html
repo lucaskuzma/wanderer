@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MIDI UI</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        font-family: "Monaspace Krypton Var", monospace; /* make sure you install the font locally */
+        background: #111;
+        color: #eee;
+      }
+      .pane {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        background: #222;
+        border-right: 1px solid #444;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .pane:last-child {
+        border-right: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="left" class="pane"></div>
+    <div id="right" class="pane"></div>
+
+    <script>
+      const styleMap = {
+        error: "color: #ff5555; font-weight: bold;",
+        note: "color: #33ccff;",
+        accent: "color: #ffff66; font-style: italic;",
+        success: "color: #55ff55;",
+      };
+
+      function renderMarkup(str) {
+        // Replace <tag>content</tag> with styled spans
+        return str.replace(/<(\w+)>(.*?)<\/\1>/g, (match, tag, content) => {
+          const style = styleMap[tag] || "";
+          return `<span style="${style}">${content}</span>`;
+        });
+      }
+
+      function clearPane(pane) {
+        document.getElementById(pane).innerHTML = "";
+      }
+      function writePane(pane, text) {
+        const el = document.getElementById(pane);
+        el.innerHTML += renderMarkup(text) + "<br>";
+        el.scrollTop = el.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
