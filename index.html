@@ -1,43 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>MIDI UI</title>
-    <style>
-      body {
-        margin: 0;
-        display: flex;
-        height: 100vh;
-        font-family: "Monaspace Krypton Var", monospace; /* make sure you install the font locally */
-        background: #111;
-        color: #eee;
-      }
-      #pane-container {
-        display: flex;
-        width: 100%;
-        height: 100%;
-      }
-      .pane {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-        background: #222;
-        border-right: 1px solid #444;
-        font-size: 14px;
-        line-height: 1.4;
-        /* Hide scrollbars but keep scrolling functionality */
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
-      }
-      .pane::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera */
-      }
-      .pane:last-child {
-        border-right: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="pane-container"></div>
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<title>MIDI UI</title>
+		<style>
+			body {
+				margin: 0;
+				display: flex;
+				height: 100vh;
+				font-family: "Monaspace Krypton Var", monospace; /* make sure you install the font locally */
+				background: #111;
+				color: #eee;
+			}
+			#pane-container {
+				display: flex;
+				width: 100%;
+				height: 100%;
+			}
+			.pane {
+				flex: 1;
+				padding: 8px;
+				overflow-y: auto;
+				background: #222;
+				border-right: 1px solid #444;
+				font-size: 12px;
+				line-height: 1.4;
+				/* Hide scrollbars but keep scrolling functionality */
+				scrollbar-width: none; /* Firefox */
+				-ms-overflow-style: none; /* IE and Edge */
+			}
+			.pane::-webkit-scrollbar {
+				display: none; /* Chrome, Safari, Opera */
+			}
+			.pane:last-child {
+				border-right: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="pane-container"></div>
+	</body>
 </html>

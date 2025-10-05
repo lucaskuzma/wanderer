@@ -1,3 +1,4 @@
 *.pyc
 Test\ Project/Backup
 Test\ Project/Samples
+.DS_Store
