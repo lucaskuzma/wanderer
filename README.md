@@ -2,6 +2,8 @@
 
 Transforms incoming notes to their random harmonics.
 
+<img src="./images/screenshot.png" alt="Wanderer" width="500">
+
 ## Dependencies
 
 You may need to install XCode CLI tools.
